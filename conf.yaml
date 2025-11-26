@@ -9,7 +9,7 @@
 spider_settings:
   enable: true
   json_url: "https://raw.githubusercontent.com/ECNU-minus/Friend-Circle-Lite/main/sites.json"
-  article_count: 8
+  article_count: 16
   merge_result:
     enable: false
     merge_json_url: "https://fc.liushen.fun"
@@ -61,28 +61,28 @@ smtp:
 #   url:                指定的RSS地址
 specific_RSS:
   - name: "本科生院"
-    url: "https://rsshub.cups.moe/ecnu/bksy"
+    url: "http://localhost:1200/ecnu/bksy"
   - name: "软件工程学院"
-    url: "https://rsshub.cups.moe/ecnu/sei"
+    url: "http://localhost:1200/ecnu/sei"
   - name: "通信与电子工程学院"
-    url: "https://rsshub.cups.moe/ecnu/cee"
+    url: "http://localhost:1200/ecnu/cee"
   - name: "计算机科学与技术学院"
-    url: "https://rsshub.cups.moe/ecnu/cs"
+    url: "http://localhost:1200/ecnu/cs"
   - name: "数据科学与工程学院"
-    url: "https://rsshub.cups.moe/ecnu/dase"
+    url: "http://localhost:1200/ecnu/dase"
   - name: "大夏书院"
-    url: "https://rsshub.cups.moe/ecnu/dx"
+    url: "http://localhost:1200/ecnu/dx"
   - name: "地球科学学部"
-    url: "https://rsshub.cups.moe/ecnu/dxb"
+    url: "http://localhost:1200/ecnu/dxb"
   - name: "教育学部"
-    url: "https://rsshub.cups.moe/ecnu/ed"
+    url: "http://localhost:1200/ecnu/ed"
   - name: "空间人工智能学院"
-    url: "https://rsshub.cups.moe/ecnu/geoai"
+    url: "http://localhost:1200/ecnu/geoai"
   - name: "光华书院"
-    url: "https://rsshub.cups.moe/ecnu/ghcollege"
+    url: "http://localhost:1200/ecnu/ghcollege"
   - name: "历史学系"
-    url: "https://rsshub.cups.moe/ecnu/history"
+    url: "http://localhost:1200/ecnu/history"
   - name: "孟宪承书院"
-    url: "https://rsshub.cups.moe/ecnu/mxcsy"
+    url: "http://localhost:1200/ecnu/mxcsy"
   - name: "哲学系"
-    url: "https://rsshub.cups.moe/ecnu/philo"
+    url: "http://localhost:1200/ecnu/philo"

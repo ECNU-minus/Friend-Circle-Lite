@@ -12,6 +12,17 @@ jobs:
   friend-circle-lite:
     runs-on: ubuntu-latest
 
+    services:
+      rsshub:
+        image: diygod/rsshub:latest
+        ports:
+          - 1200:1200
+        options: >-
+          --health-cmd "curl -f http://localhost:1200/ || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - name: Pull Latest Repository
       uses: actions/checkout@v4
