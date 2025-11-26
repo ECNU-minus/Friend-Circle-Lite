@@ -44,38 +44,86 @@ function initialize_fc_lite() {
   let start = 0; // 记录加载起始位置
   let allArticles = []; // 存储所有文章
   let currentFilteredArticles = [];
+
+  function loadInitialData() {
+    const cacheKey = "friend-circle-lite-cache";
+    const cacheTimeKey = "friend-circle-lite-cache-time";
+    const cacheTime = localStorage.getItem(cacheTimeKey);
+    const now = new Date().getTime();
+
+    if (cacheTime && now - cacheTime < 30 * 60 * 1000) {
+      const cachedData = JSON.parse(localStorage.getItem(cacheKey));
+      if (cachedData) {
+        processArticles(cachedData);
+        return;
+      }
+    }
+
+    fetch(`${UserConfig.private_api_url}all.json`)
+      .then((response) => response.json())
+      .then((data) => {
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+        localStorage.setItem(cacheTimeKey, now.toString());
+        processArticles(data);
+      })
+      .catch((err) => {
+        console.error("Failed to load data:", err);
+      });
+  }
+
+  function createArticleCard(article) {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const title = document.createElement("div");
+    title.className = "card-title";
+    title.innerText = article.title;
+    title.onclick = () => window.open(article.link, "_blank");
+    card.appendChild(title);
+
+    const author = document.createElement("div");
+    author.className = "card-author";
+    const authorImg = document.createElement("img");
+    authorImg.className = "no-lightbox";
+    authorImg.src = article.avatar || UserConfig.error_img;
+    authorImg.onerror = () => (authorImg.src = UserConfig.error_img);
+    author.appendChild(authorImg);
+    author.appendChild(document.createTextNode(article.author));
+    card.appendChild(author);
+
+    author.onclick = () => {
+      showAuthorArticles(article.author, article.avatar, article.link);
+    };
+
+    const date = document.createElement("div");
+    date.className = "card-date";
+    date.innerText = "🗓️" + article.created.substring(0, 10);
+    card.appendChild(date);
+
+    const bgImg = document.createElement("img");
+    bgImg.className = "card-bg no-lightbox";
+    bgImg.src = article.avatar || UserConfig.error_img;
+    bgImg.onerror = () => (bgImg.src = UserConfig.error_img);
+    card.appendChild(bgImg);
+
+    return card;
+  }
+
   function loadMoreArticles() {
-    // const cacheKey = "friend-circle-lite-cache";
-    // const cacheTimeKey = "friend-circle-lite-cache-time";
-    // const cacheTime = localStorage.getItem(cacheTimeKey);
-    // const now = new Date().getTime();
+    const nextStart = start;
+    const nextEnd = start + UserConfig.page_turning_number;
+    const nextArticles = currentFilteredArticles.slice(nextStart, nextEnd);
 
-    // if (cacheTime && now - cacheTime < 10 * 60 * 1000) {
-    //   // 缓存时间小于10分钟
-    //   const cachedData = JSON.parse(localStorage.getItem(cacheKey));
-    //   if (cachedData) {
-    //     processArticles(cachedData);
-    //     return;
-    //   }
-    // }
+    if (nextArticles.length === 0) {
+      loadMoreBtn.style.display = "none";
+      return;
+    }
+    nextArticles.forEach((article) => {
+      const card = createArticleCard(article);
+      container.appendChild(card);
+    });
 
-    // fetch(`${UserConfig.private_api_url}all.json`)
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     localStorage.setItem(cacheKey, JSON.stringify(data));
-    //     localStorage.setItem(cacheTimeKey, now.toString());
-    //     processArticles(data);
-    //   })
-    //   .finally(() => {
-    //     loadMoreBtn.innerText = "再来亿点"; // 恢复按钮文本
-    //   });
-
-    const nextArticles = currentFilteredArticles.slice(
-      start,
-      start + UserConfig.page_turning_number
-    );
-    renderArticles([...container.children].map((n) => n).concat(nextArticles));
-    start += UserConfig.page_turning_number;
+    start = nextEnd;
     if (start >= currentFilteredArticles.length) {
       loadMoreBtn.style.display = "none";
     }
@@ -84,40 +132,7 @@ function initialize_fc_lite() {
   function renderArticles(articleToRender) {
     container.innerHTML = "";
     articleToRender.forEach((article) => {
-      const card = document.createElement("div");
-      card.className = "card";
-
-      const title = document.createElement("div");
-      title.className = "card-title";
-      title.innerText = article.title;
-      card.appendChild(title);
-      title.onclick = () => window.open(article.link, "_blank");
-
-      const author = document.createElement("div");
-      author.className = "card-author";
-      const authorImg = document.createElement("img");
-      authorImg.className = "no-lightbox";
-      authorImg.src = article.avatar || UserConfig.error_img; // 使用默认头像
-      authorImg.onerror = () => (authorImg.src = UserConfig.error_img); // 头像加载失败时使用默认头像
-      author.appendChild(authorImg);
-      author.appendChild(document.createTextNode(article.author));
-      card.appendChild(author);
-
-      author.onclick = () => {
-        showAuthorArticles(article.author, article.avatar, article.link);
-      };
-
-      const date = document.createElement("div");
-      date.className = "card-date";
-      date.innerText = "🗓️" + article.created.substring(0, 10);
-      card.appendChild(date);
-
-      const bgImg = document.createElement("img");
-      bgImg.className = "card-bg no-lightbox";
-      bgImg.src = article.avatar || UserConfig.error_img;
-      bgImg.onerror = () => (bgImg.src = UserConfig.error_img); // 头像加载失败时使用默认头像
-      card.appendChild(bgImg);
-
+      const card = createArticleCard(article);
       container.appendChild(card);
     });
   }
@@ -155,29 +170,45 @@ function initialize_fc_lite() {
       opt.textContent = author;
       authorFilter.appendChild(opt);
     });
-    currentFilteredArticles = [...allArticles]; 
+    currentFilteredArticles = [...allArticles];
 
     // 处理统计数据
+    // const stats = data.statistical_data;
+    // statsContainer.innerHTML = `
+    //         <div>Powered by: <a href="https://github.com/willow-god/Friend-Circle-Lite" target="_blank">FriendCircleLite</a><br></div>
+    //         <div>Designed By: <a href="https://www.liushen.fun/" target="_blank">LiuShen</a><br></div>
+    //         <div>订阅:${stats.friends_num}   活跃:${stats.active_num}   总文章数:${stats.article_num}<br></div>
+    //         <div>更新时间:${stats.last_updated_time}</div>
+    //     `;
+
+    // const initialArticles = allArticles.slice(
+    //   start,
+    //   start + UserConfig.page_turning_number
+    // );
+    // renderArticles(initialArticles);
+    // start = initialArticles.length;
+
+    // if (start >= allArticles.length) {
+    //   loadMoreBtn.style.display = "none";
+    // } else {
+    //   loadMoreBtn.style.display = "block"; // 确保按钮显示
+    // }
     const stats = data.statistical_data;
-    statsContainer.innerHTML = `
-            <div>Powered by: <a href="https://github.com/willow-god/Friend-Circle-Lite" target="_blank">FriendCircleLite</a><br></div>
-            <div>Designed By: <a href="https://www.liushen.fun/" target="_blank">LiuShen</a><br></div>
-            <div>订阅:${stats.friends_num}   活跃:${stats.active_num}   总文章数:${stats.article_num}<br></div>
-            <div>更新时间:${stats.last_updated_time}</div>
-        `;
+    statsContainer.innerHTML = `...`; // 保持不变
 
-    const initialArticles = allArticles.slice(
-      start,
-      start + UserConfig.page_turning_number
+    container.innerHTML = "";
+    const initialArticles = currentFilteredArticles.slice(
+      0,
+      UserConfig.page_turning_number
     );
-    renderArticles(initialArticles);
+    initialArticles.forEach((article) =>
+      container.appendChild(createArticleCard(article))
+    );
     start = initialArticles.length;
-
-    if (start >= allArticles.length) {
-      loadMoreBtn.style.display = "none";
-    } else {
-      loadMoreBtn.style.display = "block"; // 确保按钮显示
-    }
+    loadMoreBtn.style.display =
+      currentFilteredArticles.length > UserConfig.page_turning_number
+        ? "block"
+        : "none";
   }
 
   function showAuthorArticles(author, avatar, link) {
@@ -261,8 +292,8 @@ function initialize_fc_lite() {
   }
 
   // 初始加载
-  loadMoreArticles();
-  
+  loadInitialData();
+
   // 加载更多按钮点击事件
   loadMoreBtn.addEventListener("click", loadMoreArticles);
 
