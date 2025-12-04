@@ -25,9 +25,9 @@ async def favicon():
     return FileResponse('static/favicon.ico')
 
 # 返回背景图片
-@app.get("/bg-light.webp", response_class=HTMLResponse)
+@app.get("/bg-light.png", response_class=HTMLResponse)
 async def bg_light():
-    return FileResponse('static/bg-light.webp')
+    return FileResponse('static/bg-light.png')
     
 # 返回背景图片
 @app.get("/bg-dark.webp", response_class=HTMLResponse)
